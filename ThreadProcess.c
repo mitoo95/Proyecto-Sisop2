@@ -11,7 +11,8 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition1 = PTHREAD_COND_INITIALIZER;
 pthread_cond_t condition2 = PTHREAD_COND_INITIALIZER;
 
-void *ThreadProcess1(void *arg) {
+void *ThreadProcess1(void *arg)
+{
 
   SharedBlock *sharedMemory = (SharedBlock *)arg;
   HashTable *table = createHashTable(sharedMemory->tableSize);
@@ -29,47 +30,65 @@ void *ThreadProcess1(void *arg) {
   int contiguousEntries = 0;
   int pageReference = 0;
 
-  if ((gccFile = fopen("gcc.trace", "r")) == NULL) {
+  if ((gccFile = fopen("gcc.trace", "r")) == NULL)
+  {
     printf("Couldn't open gcc.trace.\n");
     return (int *)1;
   }
 
-  while (sharedMemory->iterations < sharedMemory->maxTraceEntries) {
+  while (sharedMemory->iterations < sharedMemory->maxTraceEntries)
+  {
 
     pthread_mutex_lock(&lock);
-    while (turn != 1) pthread_cond_wait(&condition1, &lock);
+    while (turn != 1)
+      pthread_cond_wait(&condition1, &lock);
 
-    for (contiguousEntries = 0; contiguousEntries < sharedMemory->q; contiguousEntries++) {
+    for (contiguousEntries = 0; contiguousEntries < sharedMemory->q; contiguousEntries++)
+    {
 
-      if (sharedMemory->iterations >= sharedMemory->maxTraceEntries) break;
+      if (sharedMemory->iterations >= sharedMemory->maxTraceEntries)
+        break;
 
-      if ((read = getline(&line, &len, gccFile)) != -1) {
+      if ((read = getline(&line, &len, gccFile)) != -1)
+      {
 
         sscanf(line, "%x %c", &traceAddress, &traceType);
         page = createPage(traceAddress, traceType, PID_1);
 
         // Revisar que pagina este en el queue
-        if (!sharedMemory->chosenAlgorithm){
+        if (!sharedMemory->chosenAlgorithm)
+        {
           // Case LRU
           pageReference = lruReferToPageInQueue(sharedMemory->queue, table, page);
-          if (!pageReference) sharedMemory->pageFaults++;
-          else if (pageReference == 1) sharedMemory->hits++;
-          else sharedMemory->updates++;
-        } else {
+          if (!pageReference)
+            sharedMemory->pageFaults++;
+          else if (pageReference == 1)
+            sharedMemory->hits++;
+          else
+            sharedMemory->updates++;
+        }
+        else
+        {
           // Case second chance
           pageReference = secondChanceReferToPageInQueue(sharedMemory->queue, table, page);
-          if (!pageReference) sharedMemory->pageFaults++;
-          else if (pageReference == 1) sharedMemory->hits++;
-          else sharedMemory->updates++;
+          if (!pageReference)
+            sharedMemory->pageFaults++;
+          else if (pageReference == 1)
+            sharedMemory->hits++;
+          else
+            sharedMemory->updates++;
         }
 
-        //Incrementar contador Read/Write dependiendo del tipo de trace
-        if (!pageReference) {
-          if (page->traceType == 'R') sharedMemory->numOfReads++;
-          else sharedMemory->numOfWrites++;
+        // Incrementar contador Read/Write dependiendo del tipo de trace
+        if (!pageReference)
+        {
+          if (page->traceType == 'R')
+            sharedMemory->numOfReads++;
+          else
+            sharedMemory->numOfWrites++;
         }
 
-        //Incrementar el contador del proceso actual trace
+        // Incrementar el contador del proceso actual trace
         sharedMemory->gccTraceBits++;
 
         sharedMemory->iterations++;
@@ -79,7 +98,6 @@ void *ThreadProcess1(void *arg) {
     turn = 2;
     pthread_cond_signal(&condition2);
     pthread_mutex_unlock(&lock);
-
   }
 
   pthread_mutex_lock(&lock);
@@ -93,7 +111,8 @@ void *ThreadProcess1(void *arg) {
   return NULL;
 }
 
-void *ThreadProcess2(void *arg) {
+void *ThreadProcess2(void *arg)
+{
 
   SharedBlock *sharedMemory = (SharedBlock *)arg;
   HashTable *table = createHashTable(sharedMemory->tableSize);
@@ -111,47 +130,65 @@ void *ThreadProcess2(void *arg) {
   int contiguousEntries = 0;
   int pageReference = 0;
 
-  if ((bzipFile = fopen("bzip.trace", "r")) == NULL) {
+  if ((bzipFile = fopen("bzip.trace", "r")) == NULL)
+  {
     printf("Couldn't open bzip.trace.\n");
     return (int *)1;
   }
 
-  while (sharedMemory->iterations < sharedMemory->maxTraceEntries) {
+  while (sharedMemory->iterations < sharedMemory->maxTraceEntries)
+  {
 
     pthread_mutex_lock(&lock);
-    while (turn != 2) pthread_cond_wait(&condition2, &lock);
+    while (turn != 2)
+      pthread_cond_wait(&condition2, &lock);
 
-    for (contiguousEntries = 0; contiguousEntries < sharedMemory->q; contiguousEntries++) {
+    for (contiguousEntries = 0; contiguousEntries < sharedMemory->q; contiguousEntries++)
+    {
 
-      if (sharedMemory->iterations >= sharedMemory->maxTraceEntries) break;
+      if (sharedMemory->iterations >= sharedMemory->maxTraceEntries)
+        break;
 
-      if ((read = getline(&line, &len, bzipFile)) != -1) {
+      if ((read = getline(&line, &len, bzipFile)) != -1)
+      {
 
         sscanf(line, "%x %c", &traceAddress, &traceType);
         page = createPage(traceAddress, traceType, PID_2);
 
         // Revisar que pagina este en el queue
-        if (!sharedMemory->chosenAlgorithm) {
+        if (!sharedMemory->chosenAlgorithm)
+        {
           // Case LRU
           pageReference = lruReferToPageInQueue(sharedMemory->queue, table, page);
-          if (!pageReference) sharedMemory->pageFaults++;
-          else if (pageReference == 1) sharedMemory->hits++;
-          else sharedMemory->updates++;
-        } else {
+          if (!pageReference)
+            sharedMemory->pageFaults++;
+          else if (pageReference == 1)
+            sharedMemory->hits++;
+          else
+            sharedMemory->updates++;
+        }
+        else
+        {
           // Case second chance
           pageReference = secondChanceReferToPageInQueue(sharedMemory->queue, table, page);
-          if (!pageReference) sharedMemory->pageFaults++;
-          else if (pageReference == 1) sharedMemory->hits++;
-          else sharedMemory->updates++;
+          if (!pageReference)
+            sharedMemory->pageFaults++;
+          else if (pageReference == 1)
+            sharedMemory->hits++;
+          else
+            sharedMemory->updates++;
         }
 
-        //Incrementar contador Read/Write dependiendo del tipo de trace
-        if (!pageReference) {
-          if (page->traceType == 'R') sharedMemory->numOfReads++;
-          else sharedMemory->numOfWrites++;
+        // Incrementar contador Read/Write dependiendo del tipo de trace
+        if (!pageReference)
+        {
+          if (page->traceType == 'R')
+            sharedMemory->numOfReads++;
+          else
+            sharedMemory->numOfWrites++;
         }
 
-        //Incrementar el contador del proceso actual trace
+        // Incrementar el contador del proceso actual trace
         sharedMemory->bzipTraceBits++;
 
         sharedMemory->iterations++;
@@ -161,7 +198,6 @@ void *ThreadProcess2(void *arg) {
     turn = 1;
     pthread_cond_signal(&condition1);
     pthread_mutex_unlock(&lock);
-
   }
 
   pthread_mutex_lock(&lock);

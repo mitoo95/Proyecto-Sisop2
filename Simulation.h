@@ -5,31 +5,34 @@
 #define PAGE_SIZE 4096
 #define FRAME_SIZE 4096
 
-//struct usada en Hashtable, cola y lista
-typedef struct Page {
+// struct usada en Hashtable, cola y lista
+typedef struct Page
+{
   unsigned int trace;
   unsigned int pageNumber;
   unsigned int offset;
   char traceType;
   unsigned int proccessId;
-  // InCache es 0 cuando la pagina no esta en el cache / 1 cuando esta en cache
-  int inCache;
+  // isInCache es 0 cuando la pagina no esta en el cache / 1 cuando esta en cache
+  int isInCache;
   int secondChance;
 } Page;
 
 // Linked list
-typedef struct LinkedList {
+typedef struct LinkedList
+{
   Page *page;
   struct LinkedList *next;
 } LinkedList;
 
 // Hash Table
-typedef struct HashTable {
+typedef struct HashTable
+{
 
-  //array de pointers para mappear nodos
+  // array de pointers para mappear nodos
   Page **pageArray;
 
-  //array de buckets para resolver colisiones
+  // array de buckets para resolver colisiones
   LinkedList **overflowBucket;
   int size;
   int count;
@@ -37,7 +40,8 @@ typedef struct HashTable {
 } HashTable;
 
 // Queue FIFO
-typedef struct Queue {
+typedef struct Queue
+{
   unsigned occupiedPages;
   unsigned maxPages;
   int front, rear;
@@ -69,7 +73,7 @@ Queue *createQueue(int numberOfPages);
 int isQueueFull(Queue *queue);
 int isQueueEmpty(Queue *queue);
 void insertToQueue(Queue *queue, Page *page);
-int searchPageInQueue(Queue * queue, Page *page);
+int searchPageInQueue(Queue *queue, Page *page);
 int lruReferToPageInQueue(Queue *queue, HashTable *table, Page *page);
 int secondChanceReferToPageInQueue(Queue *queue, HashTable *table, Page *page);
 void printQueue(Queue *queue);
